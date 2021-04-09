@@ -540,3 +540,64 @@ webpack.config.js    entry 中增加配置名称another
 这种方法不够灵活，并且不能动态地将核心应用程序逻辑中的代码拆分出来。
 以上两点中，第一点对我们的示例来说无疑是个问题，因为之前我们在 ./src/index.js 中也引入过 lodash，这样就在两个 bundle 中造成重复引用。
 
+## 防止重复(prevent duplication)
+> 入口依赖
+配置 dependOn option 选项，这样可以在多个 chunk 之间共享模块：
+修改webpack.config.js 配置
+```
+ const path = require('path');
+
+ module.exports = {
+   mode: 'development',
+   entry: {
+
+    index: {
+      import: './src/index.js',
+      dependOn: 'shared',
+    },
+    another: {
+      import: './src/another-module.js',
+      dependOn: 'shared',
+    },
+    shared: 'lodash',
+   },
+   output: {
+     filename: '[name].bundle.js',
+     path: path.resolve(__dirname, 'dist'),
+   },
+   optimization: {
+    runtimeChunk: 'single',//多个入口时设置
+  },
+ };
+```
+
+上可知，除了生成 shared.bundle.js，index.bundle.js 和 another.bundle.js 之外，还生成了一个 runtime.bundle.js 文件。
+
+尽管可以在 webpack 中允许每个页面使用多入口，应尽可能避免使用多入口的入口：entry: { page: ['./analytics', './app'] }。如此，在使用 async 脚本标签时，会有更好的优化以及一致的执行顺序。
+
+## SplitChunksPlugin
+SplitChunksPlugin 插件可以将公共的依赖模块提取到已有的入口 chunk 中，或者提取到一个新生成的 chunk。让我们使用这个插件，将之前的示例中重复的 lodash 模块去除
+
+webpack.config.js  设置optimization属性
+```
+const path = require('path');
+
+  module.exports = {
+    mode: 'development',
+    entry: {
+      index: './src/index.js',
+      another: './src/another-module.js',
+    },
+    output: {
+      filename: '[name].bundle.js',
+      path: path.resolve(__dirname, 'dist'),
+    },
+   optimization: {
+     splitChunks: {
+       chunks: 'all',
+     },
+   },
+  };
+```
+
+使用 optimization.splitChunks 配置选项之后，现在应该可以看出，index.bundle.js 和 another.bundle.js 中已经移除了重复的依赖模块。需要注意的是，插件将 lodash 分离到单独的 chunk，并且将其从 main bundle 中移除，减轻了大小。执行 npm run build 查看效果

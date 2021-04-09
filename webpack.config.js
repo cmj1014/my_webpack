@@ -7,6 +7,15 @@ module.exports = {
       index: './src/index.js',//命名引入名称
       print: './src/print.js', //命名引入名称
       another: './src/another-module.js',  //分离的模块
+      /* index: {
+          import: './src/index.js',
+          dependOn: 'shared',
+        },
+        another: {
+          import: './src/another-module.js',
+          dependOn: 'shared',
+        },
+        shared: 'lodash', */
     },
     devtool: 'inline-source-map',//错误追踪--显示未打包时错误位置
     devServer: {
@@ -42,5 +51,13 @@ module.exports = {
              ] 
            }
         ] 
-    }
+    },
+    //  optimization: {
+    //    runtimeChunk: 'single', //多个入口时设置
+    //  },
+     optimization: {
+       splitChunks: {
+         chunks: 'all',
+       },
+     },
 };
