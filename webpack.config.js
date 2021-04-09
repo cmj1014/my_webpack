@@ -23,16 +23,18 @@ module.exports = {
     },
      plugins: [
        new HtmlWebpackPlugin({
-         title: '管理输出',
+        //  title: '管理输出',
+        title: 'Caching',
        }),
      ],
   output: {//输出配置内容
     // filename: 'main.js',
     // filename: 'bundle.js',
-    filename: '[name].bundle.js',//动态配置名字
+    // filename: '[name].bundle.js',//动态配置名字
+    filename: '[name].[contenthash].js',// 打包出来的名字有hash值
     path: path.resolve(__dirname, 'dist'),//输出文件名
     clean: true,//清空dist文件
-    publicPath: '/', //加载资源的路径 '/' 是当前路径
+    publicPath: './', //加载资源的路径 './' 是当前路径
   },
     mode: 'development',
     module: {
@@ -52,12 +54,23 @@ module.exports = {
            }
         ] 
     },
-    //  optimization: {
-    //    runtimeChunk: 'single', //多个入口时设置
-    //  },
      optimization: {
+       runtimeChunk: 'single', //多个入口时设置
+        moduleIds: 'deterministic',//代码不变，后缀hash值也不会改变
+       splitChunks: {
+         cacheGroups: {
+           vendor: {
+             test: /[\\/]node_modules[\\/]/,
+             name: 'vendors',
+             chunks: 'all',
+           },
+         },
+       },
+       },
+
+     /* optimization: {
        splitChunks: {
          chunks: 'all',
        },
-     },
+     }, */
 };

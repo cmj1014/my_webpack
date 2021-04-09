@@ -1,7 +1,8 @@
 import _ from 'lodash';
 import './style.css';
 import Icon from './icon.jpg';
-import printMe from './print.js';
+// import printMe from './print.js';
+ import Print from './print';
 
 function component() {
   let element = document.createElement('div');
@@ -16,7 +17,8 @@ function component() {
 
   const btn = document.createElement('button');
   btn.innerHTML = 'Click me and check the console!';
-  btn.onclick = printMe;
+  // btn.onclick = printMe;
+  element.onclick = Print.bind(null, 'Hello webpack!');
 
   element.appendChild(btn);
 
