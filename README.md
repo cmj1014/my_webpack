@@ -429,3 +429,114 @@ package.json配置启动命令  "start": "webpack serve --open",
 在命令行中运行 npm start，我们会看到浏览器自动加载页面。如果你更改任何源文件并保存它们，web server 将在编译代码后自动重新加载。更多服务器配置可以查看相应文档
 
 ### 使用 webpack-dev-middleware 
+webpack-dev-middleware 是一个封装器(wrapper)，它可以把 webpack 处理过的文件发送到一个 server。 webpack-dev-server 在内部使用了它，然而它也可以作为一个单独的 package 来使用，以便根据需求进行更多自定义设置
+
+> 首先，安装 express 和 webpack-dev-middleware
+npm install --save-dev express webpack-dev-middleware
+现在，我们需要调整 webpack 配置文件，以确保 middleware(中间件) 功能能够正确启用：
+
+webpack.config.js 中的output增加 publicPath: '/',
+
+```
+ const path = require('path');
+ const HtmlWebpackPlugin = require('html-webpack-plugin');
+
+ module.exports = {
+   mode: 'development',
+   entry: {
+     index: './src/index.js',
+     print: './src/print.js',
+   },
+   devtool: 'inline-source-map',
+   devServer: {
+     contentBase: './dist',
+   },
+   plugins: [
+     new HtmlWebpackPlugin({
+       title: 'Development',
+     }),
+   ],
+   output: {
+     filename: '[name].bundle.js',
+     path: path.resolve(__dirname, 'dist'),
+     clean: true,
+    publicPath: '/',
+   },
+ };
+```
+
+我们将会在 server 脚本使用 publicPath，以确保文件资源能够正确地 serve 在 http://localhost:3000 下，稍后我们会指定 port number(端口号)。接下来是设置自定义 express server
+> 创建 server.js文件 在webpack.config.js同级
+server.js
+```
+const express = require('express');
+const webpack = require('webpack');
+const webpackDevMiddleware = require('webpack-dev-middleware');
+
+const app = express();
+const config = require('./webpack.config.js');
+const compiler = webpack(config);
+
+// 告知 express 使用 webpack-dev-middleware，
+// 以及将 webpack.config.js 配置文件作为基础配置。
+app.use(
+  webpackDevMiddleware(compiler, {
+    publicPath: config.output.publicPath,
+  })
+);
+
+// 将文件 serve 到 port 3000。
+app.listen(3000, function () {
+  console.log('Example app listening on port 3000!\n');
+});
+```
+
+现在，添加一个 npm script，以使我们更方便地运行 server：
+
+> package.json 添加命令"server": "node server.js" 启动它
+
+# 代码分离
+
+代码分离是 webpack 中最引人注目的特性之一。此特性能够把代码分离到不同的 bundle 中，然后可以按需加载或并行加载这些文件。代码分离可以用于获取更小的 bundle，以及控制资源加载优先级，如果使用合理，会极大影响加载时间。
+
+> 常用的代码分离方法有三种：
+入口起点：使用 entry 配置手动地分离代码。
+防止重复：使用 Entry dependencies 或者 SplitChunksPlugin 去重和分离 chunk。
+动态导入：通过模块的内联函数调用来分离代码。
+
+## 入口起点(entry point) 
+这是迄今为止最简单直观的分离代码的方式。不过，这种方式手动配置较多，并有一些隐患，我们将会解决这些问题。先来看看如何从 main bundle 中分离 another module(另一个模块)：
+在src下创建another-module.js 
+another-module.js
+```
+import _ from 'lodash';
+
+console.log(_.join(['Another', 'module', 'loaded!'], ' '));
+
+```
+
+webpack.config.js    entry 中增加配置名称another
+```
+ const path = require('path');
+
+ module.exports = {
+  entry: './src/index.js',
+  mode: 'development',
+  entry: {
+    index: './src/index.js',
+    another: './src/another-module.js',
+  },
+   output: {
+    filename: 'main.js',
+    filename: '[name].bundle.js',
+     path: path.resolve(__dirname, 'dist'),
+   },
+ };
+```
+
+正如前面提到的，这种方式存在一些隐患：
+
+如果入口 chunk 之间包含一些重复的模块，那些重复模块都会被引入到各个 bundle 中。
+这种方法不够灵活，并且不能动态地将核心应用程序逻辑中的代码拆分出来。
+以上两点中，第一点对我们的示例来说无疑是个问题，因为之前我们在 ./src/index.js 中也引入过 lodash，这样就在两个 bundle 中造成重复引用。
+

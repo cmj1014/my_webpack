@@ -6,6 +6,7 @@ module.exports = {
     entry: {//引入配置内容
       index: './src/index.js',//命名引入名称
       print: './src/print.js', //命名引入名称
+      another: './src/another-module.js',  //分离的模块
     },
     devtool: 'inline-source-map',//错误追踪--显示未打包时错误位置
     devServer: {
@@ -22,6 +23,7 @@ module.exports = {
     filename: '[name].bundle.js',//动态配置名字
     path: path.resolve(__dirname, 'dist'),//输出文件名
     clean: true,//清空dist文件
+    publicPath: '/', //加载资源的路径 '/' 是当前路径
   },
     mode: 'development',
     module: {
