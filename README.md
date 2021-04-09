@@ -6,7 +6,7 @@ git branch -M main
 git remote add origin https://github.com/cmj1014/my_webpack.git
 git push -u origin main
 
-# 安装webpack 和配置
+# 安装webpack5 和配置
 npm install webpack webpack-cli --save-dev
 创建以下目录结构、文件和内容：
   webpack-demo
@@ -354,3 +354,44 @@ src/print.js  文件下故意拼错单词，引用时报错
 运行 npm run build ,打开index.html 页面的按钮，会报错误，显示具体位置
 
 
+## 选择一个开发工具
+webpack 提供几种可选方式，帮助你在代码发生变化后自动编译代码：
+
+webpack's Watch Mode
+webpack-dev-server
+webpack-dev-middleware
+多数场景中，你可能需要使用 webpack-dev-server，但是不妨探讨一下以上的所有选项
+
+### 使用 watch mode(观察模式)
+package.json 里面配置"watch": "webpack --watch" 脚本
+```
+ {
+   "name": "webpack-demo",
+   "version": "1.0.0",
+   "description": "",
+   "private": true,
+   "scripts": {
+     "test": "echo \"Error: no test specified\" && exit 1",
+    "watch": "webpack --watch",
+     "build": "webpack"
+   },
+   "keywords": [],
+   "author": "",
+   "license": "ISC",
+   "devDependencies": {
+     "html-webpack-plugin": "^4.5.0",
+     "webpack": "^5.4.0",
+     "webpack-cli": "^4.2.0"
+   },
+   "dependencies": {
+     "lodash": "^4.17.20"
+   }
+ }
+ ```
+现在，你可以在命令行中运行 npm run watch，然后就会看到 webpack 是如何编译代码。 然而，你会发现并没有退出命令行。这是因为此 script 当前还在 watch 你的文件
+唯一的缺点是，为了看到修改后的实际效果，你需要刷新浏览器。如果能够自动刷新浏览器就更好了，因此接下来我们会尝试通过 webpack-dev-server 实现此功能
+
+### 使用 webpack-dev-server
+webpack-dev-server 为你提供了一个简单的 web server，并且具有 live reloading(实时重新加载)
+
+> 先安装模块  npm install --save-dev webpack-dev-server
