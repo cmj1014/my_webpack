@@ -395,3 +395,37 @@ package.json 里面配置"watch": "webpack --watch" 脚本
 webpack-dev-server 为你提供了一个简单的 web server，并且具有 live reloading(实时重新加载)
 
 > 先安装模块  npm install --save-dev webpack-dev-server
+
+webpack.config.js  增加devServer配置，让资源自动保存加载，默认自动启动端口号8080
+```
+const path = require('path');
+ const HtmlWebpackPlugin = require('html-webpack-plugin');
+
+ module.exports = {
+   mode: 'development',
+   entry: {
+     index: './src/index.js',
+     print: './src/print.js',
+   },
+   devtool: 'inline-source-map',
+  devServer: {
+    contentBase: './dist',
+  },
+   plugins: [
+     new HtmlWebpackPlugin({
+       title: 'Development',
+     }),
+   ],
+   output: {
+     filename: '[name].bundle.js',
+     path: path.resolve(__dirname, 'dist'),
+     clean: true,
+   },
+ }
+```
+package.json配置启动命令  "start": "webpack serve --open",
+
+
+在命令行中运行 npm start，我们会看到浏览器自动加载页面。如果你更改任何源文件并保存它们，web server 将在编译代码后自动重新加载。更多服务器配置可以查看相应文档
+
+### 使用 webpack-dev-middleware 

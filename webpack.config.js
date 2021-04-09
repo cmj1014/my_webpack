@@ -8,6 +8,9 @@ module.exports = {
       print: './src/print.js', //命名引入名称
     },
     devtool: 'inline-source-map',//错误追踪--显示未打包时错误位置
+    devServer: {
+      contentBase: './dist', //修改配置文件， 告知 dev server， 从什么位置查找文件：
+    },
      plugins: [
        new HtmlWebpackPlugin({
          title: '管理输出',
