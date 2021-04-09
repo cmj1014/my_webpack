@@ -315,3 +315,42 @@ clean: true,  设置清空生产文件夹内容
    },
  };
 ```
+
+# 开发环境
+## 使用 source map 显示错误
+在webpack.config.js中配置inline-source-map可以在打包后显示错误来源
+webpack.config.js
+```
+const path = require('path');
+ const HtmlWebpackPlugin = require('html-webpack-plugin');
+
+ module.exports = {
+   mode: 'development',
+   entry: {
+     index: './src/index.js',
+     print: './src/print.js',
+   },
+  devtool: 'inline-source-map',
+   plugins: [
+     new HtmlWebpackPlugin({
+       title: 'Development',
+     }),
+   ],
+   output: {
+     filename: '[name].bundle.js',
+     path: path.resolve(__dirname, 'dist'),
+     clean: true,
+   },
+ };
+```
+src/print.js  文件下故意拼错单词，引用时报错
+```
+ export default function printMe() {
+
+  cosnole.log('I get called from print.js!');
+ }
+```
+
+运行 npm run build ,打开index.html 页面的按钮，会报错误，显示具体位置
+
+
